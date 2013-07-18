@@ -13,31 +13,31 @@ import backtype.storm.utils.Utils;
 
 /**
  * @author robbreuk
+ * @author Prashanth
  */
-public class RandomWordFeeder extends BaseRichSpout {
+public final class RandomWordFeeder extends BaseRichSpout {
 
-    private SpoutOutputCollector collector;
-    private Random random;
+	private static final String[] COMPANIES = new String[]{
+		"Google", "Apple", "BlackBerry", "Microsoft", "Amazon", "Motorola", "HTC", "Samsung", "Nokia", "LG", "Sony", "Dell",
+		"ASUS", "ACER", "ZTE"};
+	private static final long serialVersionUID = -1423820654243458083L;
+	private SpoutOutputCollector collector;
+	private Random random;
 
-    @Override
-    public void declareOutputFields(OutputFieldsDeclarer declarer) {
-        declarer.declare(new Fields("word"));
-    }
+	@Override
+	public final void open(final Map map, final TopologyContext topologyContext, final SpoutOutputCollector collector) {
+		this.collector = collector;
+		this.random = new Random();
+	}
 
-    @Override
-    public void open(Map map, TopologyContext topologyContext, SpoutOutputCollector collector) {
-        this.collector = collector;
-        this.random = new Random(System.currentTimeMillis());
-    }
+	@Override
+	public final void nextTuple() {
+		Utils.sleep(200);
+		collector.emit(new Values(COMPANIES[random.nextInt(COMPANIES.length)]));
+	}
 
-    @Override
-    public void nextTuple() {
-        Utils.sleep(100);
-        String[] words = new String[]{
-                "accompts", "active",  "altiloquent", "bicuspid",  "biweekly", "buffo", "chattels", "detached", "gaoler", "heeltap",  "milksop",
-                "paralyzed", "passado", "reciminate", "repetend", "supertonic", "swashbuckler", "vaporarium", "wenching", "withers"
-        };
-
-        collector.emit(new Values(words[random.nextInt(words.length)]));
-    }
+	@Override
+	public final void declareOutputFields(final OutputFieldsDeclarer declarer) {
+		declarer.declare(new Fields("word"));
+	}
 }

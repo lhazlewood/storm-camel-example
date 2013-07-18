@@ -19,10 +19,10 @@
 
 <html>
 <head>
-    <title>Camel Storm WebSocket Example</title>
+    <title>Demo of Storm Real-time Visualization thru WebSockets</title>
     <style type="text/css">
         .chart div {
-            font: 10px sans-serif;
+            font: 15px Rokkitt;
             background-color: steelblue;
             text-align: right;
             padding: 3px;
@@ -38,11 +38,40 @@
         .chart text {
             fill: white;
         }
+
+        button {
+            font-family: Rokkitt;
+            text-shadow: 0.025em 0.025em 0.025em rgba(0, 0, 0, 0.8);
+        }
     </style>
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
-    <script src="http://code.highcharts.com/highcharts.js"></script>
+    <link rel='stylesheet' type='text/css' href="assets/css/bootstrap.min.css"/>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script src="http://code.highcharts.com/highcharts.js"/>
+    <script src="assets/js/bootstrap.min.js"/>
+    <link rel='stylesheet' type='text/css' href='http://fonts.googleapis.com/css?family=Rokkitt'>
 
     <script type='text/javascript'>
+    </script>
+</head>
+<body style="font-family: Rokkitt; font-size: 1em; text-shadow: 0.025em 0.025em 0.025em rgba(0, 0, 0, 0.8);">
+<center>
+    &nbsp;&nbsp;&nbsp;
+    <div id="btns" style="width:700px;">
+        <button value="Start" id="start" class="btn btn-primary btn-large"><i
+                class="icon-white icon-play"></i> Start Viz
+        </button>
+        &nbsp;&nbsp;&nbsp;
+        <button value="Stop" id="stop" class="btn btn-warning btn-large"
+                style="font-family: Rokkitt; text-shadow: 0.025em 0.025em 0.025em rgba(0, 0, 0, 0.8); color:#000000"><i
+                class="icon-black icon-stop"></i> Stop Viz
+        </button>
+    </div>
+
+    <div id="chart" style="width:700px; height:500px;"></div>
+    <div id="raw"></div>
+
+    <script>
+
         if (!window.WebSocket) {
             alert("WebSocket not supported by this browser");
         }
@@ -73,21 +102,21 @@
 //            redraw(data);
         }
         var socket = {
-            start : function() {
+            start: function () {
                 var location = "ws://localhost:9292/storm";
                 this._ws = new WebSocket(location);
                 this._ws.onmessage = this._onmessage;
                 this._ws.onclose = this._onclose;
             },
 
-            _onmessage : function(m) {
+            _onmessage: function (m) {
                 if (m.data) {
                     var theData = m.data;
                     newDataReceived(m.data);
                 }
             },
 
-            _onclose : function(m) {
+            _onclose: function (m) {
                 if (this._ws) {
                     this._ws.close();
                 }
@@ -101,87 +130,88 @@
         function start() {
             socket.start();
         }
-    </script>
-</head>
-<body>
 
+        $(function () {
+            $('#start').on('click', function (e) {
+                start();
+            });
+            $('#stop').on('click', function (e) {
+                stop();
+            });
+        });
+        function redraw(index, data) {
+            if (index < 0) {
+                var series = {
+                    id: data.x,
+                    name: data.x,
+                    data: [data.y]
+                };
+                chart.addSeries(series);
 
-<button value="Stop" onclick="stop()">Stop</button>
-<button value="Start" onclick="start()">Start</button>
-
-<div id="chart" style="width:600px; height:400px;"></div>
-<div id="raw"></div>
-
-<script>
-
-    function redraw(index, data) {
-        if (index < 0) {
-            var series = {
-                id : data.x,
-                name : data.x,
-                data : [data.y]
-            };
-            chart.addSeries(series);
-
-        } else {
-            for (var i = 0; i < chart.series.length; i++) {
-                if (chart.series[i].name == data.x) {
-                    chart.series[i].setData([data.y]);
-                    break;
+            } else {
+                for (var i = 0; i < chart.series.length; i++) {
+                    if (chart.series[i].name == data.x) {
+                        chart.series[i].setData([data.y]);
+                        break;
+                    }
                 }
             }
         }
-    }
 
-    var chart = new Highcharts.Chart({
-        chart : {
-            renderTo : 'chart',
-            type : 'column'
-        },
-        title : {
-            text : 'Word count'
-        },
-        xAxis : {
-            title : {
-                text : null
-            }
-        },
-        yAxis : {
-            min : 0,
-            title : {
-                text : 'Count',
-                align : 'high'
+        var chart = new Highcharts.Chart({
+            chart: {
+                renderTo: 'chart',
+                type: 'column'
             },
-            labels : {
-                overflow : 'justify'
-            }
-        },
-        plotOptions : {
-            bar : {
-                dataLabels : {
-                    enabled : true
+            title: {
+                text: 'Visualization of count of random words'
+            },
+            xAxis: {
+                title: {
+                    text: null
                 }
-            }
-        },
-        legend : {
-            layout : 'vertical',
-            align : 'right',
-            verticalAlign : 'top',
-            floating : true,
-            borderWidth : 1,
-            backgroundColor : '#FFFFFF',
-            shadow : true
-        },
-        credits : {
-            enabled : false
-        },
-        series : [
-        ]
-    });
+            },
+            yAxis: {
+                min: 0,
+                title: {
+                    text: 'Count',
+                    align: 'high'
+                },
+                labels: {
+                    overflow: 'justify'
+                }
+            },
+            plotOptions: {
+                bar: {
+                    dataLabels: {
+                        enabled: true
+                    }
+                }
+            },
+            legend: {
+                layout: 'vertical',
+                align: 'right',
+                verticalAlign: 'top',
+                floating: true,
+                borderWidth: 1,
+                backgroundColor: '#FFFFFF',
+                shadow: true
+            },
+            credits: {
+                enabled: false
+            },
+            series: [
+            ]
+        });
 
 
-</script>
+    </script>
+    <div id="texthilite" style="width:700px;">
+        <center>
+            <h2 style="font-family: Rokkitt; text-shadow: 0.025em 0.025em 0.025em rgba(0, 0, 0, 0.8);">
+                Stack: Storm Topology, JMS, ActiveMQ, Camel, WebSockets, Highcharts</h2>
+        </center>
+    </div>
+</center>
 </body>
-
-
 </html>
